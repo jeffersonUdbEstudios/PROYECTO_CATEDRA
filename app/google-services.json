@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "5573607703",
+    "project_id": "proyect-catedra",
+    "storage_bucket": "proyect-catedra.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:5573607703:android:850c92ee6540c185dcf752",
+        "android_client_info": {
+          "package_name": "com.example.proyecto_catedra"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCgbVXXOTNkTF2yeL4L_q8oEK1qDfjbK70"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
