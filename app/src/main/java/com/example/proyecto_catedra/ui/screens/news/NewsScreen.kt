@@ -1,5 +1,7 @@
 package com.example.proyecto_catedra.ui.screens.news
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -16,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -127,11 +130,25 @@ fun NewsScreen(
                 )
                 
                 // News List
+                val context = LocalContext.current
                 LazyColumn(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     items(articles) { article ->
-                        NewsCard(article)
+                        NewsCard(
+                            article = article,
+                            onClick = {
+                                // Abrir la noticia en el navegador web
+                                try {
+                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(article.articleUri))
+                                    context.startActivity(intent)
+                                } catch (e: Exception) {
+                                    // Manejar el caso donde no hay navegador instalado
+                                    // o la URL no es válida
+                                    e.printStackTrace()
+                                }
+                            }
+                        )
                     }
                 }
             }
@@ -182,14 +199,17 @@ fun NewsScreen(
 }
 
 @Composable
-fun NewsCard(article: NewsArticle) {
+fun NewsCard(
+    article: NewsArticle,
+    onClick: () -> Unit = {}
+) {
     val icons = listOf("📊", "💰", "📈", "🎓", "💡", "🏦")
     val randomIcon = icons[article.id % icons.size]
     
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { },
+            .clickable { onClick() },
         colors = CardDefaults.cardColors(
             containerColor = Color.White
         ),

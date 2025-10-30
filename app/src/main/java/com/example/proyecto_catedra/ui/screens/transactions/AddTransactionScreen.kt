@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -14,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -35,17 +37,28 @@ fun AddTransactionScreen(
         amount: Double,
         category: String,
         description: String,
-        date: Long
-    ) -> Unit = { _, _, _, _, _ -> }
+        date: Long,
+        paymentMethod: String
+    ) -> Unit = { _, _, _, _, _, _ -> }
 ) {
     var transactionType by remember { mutableStateOf<TransactionType>(TransactionType.EXPENSE) }
     var amount by remember { mutableStateOf("") }
     var category by remember { mutableStateOf("") }
+    var paymentMethod by remember { mutableStateOf("Efectivo") }
     var description by remember { mutableStateOf("") }
     var date by remember { mutableStateOf(System.currentTimeMillis()) }
     var isDatePickerVisible by remember { mutableStateOf(false) }
     var selectedDate by remember { mutableStateOf(Calendar.getInstance()) }
     var expandedCategory by remember { mutableStateOf(false) }
+    var expandedPaymentMethod by remember { mutableStateOf(false) }
+    
+    val paymentMethods = listOf(
+        "Efectivo",
+        "Tarjeta de Débito",
+        "Tarjeta de Crédito",
+        "Transferencia Bancaria",
+        "Billetera Digital"
+    )
     
     val blue = Color(0xFF2563EB)
     val lightGray = Color(0xFFF5F5F5)
@@ -55,7 +68,6 @@ fun AddTransactionScreen(
             .fillMaxSize()
             .background(Color.White)
     ) {
-        // Top Bar
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -77,7 +89,6 @@ fun AddTransactionScreen(
             )
         }
         
-        // Content
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -86,7 +97,6 @@ fun AddTransactionScreen(
         ) {
             Spacer(modifier = Modifier.height(16.dp))
             
-            // Transaction Type Selector
             Text(
                 text = "Tipo de Transacción",
                 fontSize = 16.sp,
@@ -98,12 +108,11 @@ fun AddTransactionScreen(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // Income Button
                 Surface(
                     onClick = { transactionType = TransactionType.INCOME },
                     modifier = Modifier
                         .weight(1f)
-                        .height(60.dp),
+                        .height(70.dp),
                     shape = RoundedCornerShape(12.dp),
                     color = if (transactionType == TransactionType.INCOME) Color(0xFF10B981) else lightGray
                 ) {
@@ -114,27 +123,25 @@ fun AddTransactionScreen(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = "Ingreso",
-                            tint = if (transactionType == TransactionType.INCOME) Color.White else Color.Black
+                        Text(
+                            text = "💰",
+                            fontSize = 28.sp
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = "Ingreso",
-                            fontSize = 14.sp,
+                            fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
                             color = if (transactionType == TransactionType.INCOME) Color.White else Color.Black
                         )
                     }
                 }
                 
-                // Expense Button
                 Surface(
                     onClick = { transactionType = TransactionType.EXPENSE },
                     modifier = Modifier
                         .weight(1f)
-                        .height(60.dp),
+                        .height(70.dp),
                     shape = RoundedCornerShape(12.dp),
                     color = if (transactionType == TransactionType.EXPENSE) Color(0xFFEF4444) else lightGray
                 ) {
@@ -145,15 +152,14 @@ fun AddTransactionScreen(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = "Gasto",
-                            tint = if (transactionType == TransactionType.EXPENSE) Color.White else Color.Black
+                        Text(
+                            text = "💸",
+                            fontSize = 28.sp
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = "Gasto",
-                            fontSize = 14.sp,
+                            fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
                             color = if (transactionType == TransactionType.EXPENSE) Color.White else Color.Black
                         )
@@ -163,19 +169,33 @@ fun AddTransactionScreen(
             
             Spacer(modifier = Modifier.height(8.dp))
             
-            // Amount Field
             OutlinedTextField(
                 value = amount,
-                onValueChange = { amount = it },
+                onValueChange = { newValue ->
+                    val filtered = newValue.filter { it.isDigit() || it == '.' }
+                    if (filtered.count { it == '.' } <= 1) {
+                        val parts = filtered.split(".")
+                        if (parts.size <= 2) {
+                            if (parts.size == 2 && parts[1].length <= 2) {
+                                amount = filtered
+                            } else if (parts.size == 1) {
+                                amount = filtered
+                            }
+                        }
+                    }
+                },
                 label = { Text("Monto") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Decimal
+                ),
                 leadingIcon = {
                     Text("$", fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                }
+                },
+                placeholder = { Text("0.00") }
             )
             
-            // Category Field with Select Button
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -206,7 +226,6 @@ fun AddTransactionScreen(
                 }
             }
             
-            // Category Selection Modal
             if (expandedCategory) {
                 CategorySelectionModal(
                     availableCategories = availableCategories,
@@ -218,7 +237,46 @@ fun AddTransactionScreen(
                 )
             }
             
-            // Description Field
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                OutlinedTextField(
+                    value = paymentMethod,
+                    onValueChange = { },
+                    readOnly = true,
+                    label = { Text("Método de Pago") },
+                    modifier = Modifier.weight(1f),
+                    singleLine = true
+                )
+                
+                Button(
+                    onClick = { expandedPaymentMethod = true },
+                    modifier = Modifier.height(56.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = blue
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ShoppingCart,
+                        contentDescription = "Seleccionar método de pago",
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+            
+            if (expandedPaymentMethod) {
+                PaymentMethodSelectionModal(
+                    paymentMethods = paymentMethods,
+                    onDismiss = { expandedPaymentMethod = false },
+                    onPaymentMethodSelected = { selectedMethod ->
+                        paymentMethod = selectedMethod
+                        expandedPaymentMethod = false
+                    }
+                )
+            }
+            
             OutlinedTextField(
                 value = description,
                 onValueChange = { description = it },
@@ -229,7 +287,6 @@ fun AddTransactionScreen(
                 maxLines = 4
             )
             
-            // Date Field
             OutlinedTextField(
                 value = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(date)),
                 onValueChange = { },
@@ -246,7 +303,6 @@ fun AddTransactionScreen(
                 placeholder = { Text("Selecciona una fecha") }
             )
             
-            // Date Picker Dialog
             if (isDatePickerVisible) {
                 DatePickerDialog(
                     onDismiss = { isDatePickerVisible = false },
@@ -261,7 +317,6 @@ fun AddTransactionScreen(
             
             Spacer(modifier = Modifier.weight(1f))
             
-            // Save Button
             Button(
                 onClick = {
                     if (amount.isNotEmpty() && category.isNotEmpty()) {
@@ -270,7 +325,8 @@ fun AddTransactionScreen(
                             amount.toDoubleOrNull() ?: 0.0,
                             category,
                             description,
-                            date
+                            date,
+                            paymentMethod
                         )
                         onBack()
                     }
@@ -315,7 +371,6 @@ fun DatePickerDialog(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Year
                 Column {
                     Text("Año", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(4.dp))
@@ -345,7 +400,6 @@ fun DatePickerDialog(
                     }
                 }
                 
-                // Month
                 Column {
                     Text("Mes", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(4.dp))
@@ -392,7 +446,6 @@ fun DatePickerDialog(
                     }
                 }
                 
-                // Day
                 Column {
                     Text("Día", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(4.dp))
@@ -539,6 +592,74 @@ fun CategorySelectionModal(
                         }
                         Spacer(modifier = Modifier.height(4.dp))
                     }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cerrar")
+            }
+        }
+    )
+}
+
+@Composable
+fun PaymentMethodSelectionModal(
+    paymentMethods: List<String>,
+    onDismiss: () -> Unit,
+    onPaymentMethodSelected: (String) -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = "Seleccionar Método de Pago",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold
+            )
+        },
+        text = {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(250.dp)
+            ) {
+                items(paymentMethods) { method ->
+                    Surface(
+                        onClick = {
+                            onPaymentMethodSelected(method)
+                        },
+                        color = Color.White,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            val icon = when (method) {
+                                "Efectivo" -> "💵"
+                                "Tarjeta de Débito" -> "💳"
+                                "Tarjeta de Crédito" -> "💳"
+                                "Transferencia Bancaria" -> "🏦"
+                                "Billetera Digital" -> "📱"
+                                else -> "💰"
+                            }
+                            Text(
+                                text = icon,
+                                fontSize = 24.sp,
+                                modifier = Modifier.padding(end = 12.dp)
+                            )
+                            Text(
+                                text = method,
+                                fontSize = 16.sp,
+                                color = Color.Black
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(4.dp))
                 }
             }
         },

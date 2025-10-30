@@ -52,7 +52,9 @@ class MainActivity : ComponentActivity() {
         )
         .addMigrations(
             AppDatabase.MIGRATION_1_2,
-            AppDatabase.MIGRATION_2_3
+            AppDatabase.MIGRATION_2_3,
+            AppDatabase.MIGRATION_3_4,
+            AppDatabase.MIGRATION_4_5
         )
         .fallbackToDestructiveMigration()
         .build()
@@ -253,13 +255,14 @@ fun AppNavigation(
                 AddTransactionScreen(
                     availableCategories = availableCategories,
                     onBack = { showAddTransaction = false },
-                    onSave = { type, amount, category, description, date ->
+                    onSave = { type, amount, category, description, date, paymentMethod ->
                         addTransactionViewModel.saveTransaction(
                             type = type,
                             amount = amount,
                             category = category,
                             description = description,
-                            date = date
+                            date = date,
+                            paymentMethod = paymentMethod
                         )
                         
                         // Wait a bit for the save to complete, then close

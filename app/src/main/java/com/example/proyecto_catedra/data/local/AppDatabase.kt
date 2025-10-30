@@ -13,7 +13,7 @@ import com.example.proyecto_catedra.data.local.entities.UserEntity
 
 @Database(
     entities = [UserEntity::class, TransactionEntity::class, BudgetEntity::class],
-    version = 3,
+    version = 5,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -46,6 +46,22 @@ abstract class AppDatabase : RoomDatabase() {
                 // Add new columns to budgets table
                 database.execSQL("ALTER TABLE budgets ADD COLUMN icon TEXT NOT NULL DEFAULT '💰'")
                 database.execSQL("ALTER TABLE budgets ADD COLUMN description TEXT NOT NULL DEFAULT ''")
+            }
+        }
+        
+        val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                // Add paymentMethod column to transactions table
+                database.execSQL("ALTER TABLE transactions ADD COLUMN paymentMethod TEXT NOT NULL DEFAULT 'Efectivo'")
+            }
+        }
+        
+        val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                // Add academic fields to users table
+                database.execSQL("ALTER TABLE users ADD COLUMN universidad TEXT DEFAULT NULL")
+                database.execSQL("ALTER TABLE users ADD COLUMN carrera TEXT DEFAULT NULL")
+                database.execSQL("ALTER TABLE users ADD COLUMN semestre TEXT DEFAULT NULL")
             }
         }
     }

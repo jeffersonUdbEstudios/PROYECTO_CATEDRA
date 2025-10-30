@@ -30,7 +30,8 @@ class AddTransactionViewModel(
         amount: Double,
         category: String,
         description: String,
-        date: Long
+        date: Long,
+        paymentMethod: String = "Efectivo"
     ) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
@@ -42,6 +43,7 @@ class AddTransactionViewModel(
                     description = description,
                     type = type.name,
                     category = category,
+                    paymentMethod = paymentMethod,
                     date = date
                 )
                 

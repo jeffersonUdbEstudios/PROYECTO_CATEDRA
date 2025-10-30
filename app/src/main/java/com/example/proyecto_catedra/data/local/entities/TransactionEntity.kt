@@ -13,6 +13,7 @@ data class TransactionEntity(
     val description: String,
     val type: String, // "INCOME" or "EXPENSE"
     val category: String,
+    val paymentMethod: String = "Efectivo", // Método de pago: Efectivo, Tarjeta Débito, Tarjeta Crédito, Transferencia, Billetera Digital
     val date: Long, // timestamp
     val createdAt: Long = System.currentTimeMillis()
 )

@@ -167,6 +167,80 @@ class AuthViewModel(
         }
     }
     
+    /**
+     * Actualiza el perfil del usuario con datos académicos
+     * 
+     * Este método debe ser usado por PERSONA 2 en EditProfileScreen.kt
+     * 
+     * @param name Nombre completo del estudiante
+     * @param universidad Nombre de la universidad
+     * @param carrera Carrera universitaria
+     * @param semestre Semestre o año actual (ejemplo: "1er Semestre", "3er Año")
+     * 
+     * Ejemplo de uso:
+     * authViewModel.updateUserProfile(
+     *     name = "Juan Pérez",
+     *     universidad = "Universidad de El Salvador",
+     *     carrera = "Ingeniería en Sistemas",
+     *     semestre = "5to Semestre"
+     * )
+     */
+    fun updateUserProfile(
+        name: String,
+        universidad: String?,
+        carrera: String?,
+        semestre: String?
+    ) {
+        viewModelScope.launch {
+            _authState.update { it.copy(isLoading = true, error = null) }
+            
+            try {
+                val userId = _authState.value.currentUserId
+                if (userId == null) {
+                    _authState.update { it.copy(
+                        isLoading = false,
+                        error = "Usuario no autenticado"
+                    )}
+                    return@launch
+                }
+                
+                // Actualizar en base de datos local
+                userDao.updateUserProfile(
+                    userId = userId,
+                    name = name,
+                    universidad = universidad,
+                    carrera = carrera,
+                    semestre = semestre
+                )
+                
+                // Actualizar displayName en Firebase si cambió el nombre
+                val currentUser = auth.currentUser
+                if (currentUser != null && currentUser.displayName != name) {
+                    val profileUpdates = com.google.firebase.auth.UserProfileChangeRequest.Builder()
+                        .setDisplayName(name)
+                        .build()
+                    currentUser.updateProfile(profileUpdates).await()
+                }
+                
+                // Actualizar el estado local
+                _authState.update { state ->
+                    state.copy(
+                        name = name,
+                        isLoading = false,
+                        error = null
+                    )
+                }
+            } catch (e: Exception) {
+                _authState.update { state ->
+                    state.copy(
+                        isLoading = false,
+                        error = "Error al actualizar perfil: ${e.message}"
+                    )
+                }
+            }
+        }
+    }
+    
     // Get user-friendly error message
     private fun getErrorMessage(exception: Exception): String {
         return when (exception.message) {
