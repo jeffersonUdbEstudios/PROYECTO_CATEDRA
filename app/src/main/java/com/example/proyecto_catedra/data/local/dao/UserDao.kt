@@ -25,6 +25,7 @@ interface UserDao {
     @Query("""
         UPDATE users 
         SET name = :name, 
+            photoUrl = :photoUrl,
             universidad = :universidad, 
             carrera = :carrera, 
             semestre = :semestre,
@@ -34,6 +35,7 @@ interface UserDao {
     suspend fun updateUserProfile(
         userId: String,
         name: String,
+        photoUrl: String?,
         universidad: String?,
         carrera: String?,
         semestre: String?,

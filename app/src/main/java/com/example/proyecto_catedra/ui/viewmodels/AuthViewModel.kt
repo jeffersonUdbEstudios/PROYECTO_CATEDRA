@@ -189,7 +189,8 @@ class AuthViewModel(
         name: String,
         universidad: String?,
         carrera: String?,
-        semestre: String?
+        semestre: String?,
+        photoUrl: String? = null
     ) {
         viewModelScope.launch {
             _authState.update { it.copy(isLoading = true, error = null) }
@@ -208,6 +209,7 @@ class AuthViewModel(
                 userDao.updateUserProfile(
                     userId = userId,
                     name = name,
+                    photoUrl = photoUrl,
                     universidad = universidad,
                     carrera = carrera,
                     semestre = semestre

@@ -22,6 +22,8 @@ import com.example.proyecto_catedra.ui.screens.auth.LoginScreen
 import com.example.proyecto_catedra.ui.screens.auth.RegisterScreen
 import com.example.proyecto_catedra.ui.screens.home.HomeScreen
 import com.example.proyecto_catedra.ui.screens.profile.ProfileScreen
+import com.example.proyecto_catedra.ui.screens.profile.ProfileHistoryScreen
+import com.example.proyecto_catedra.ui.screens.profile.EditProfileScreen
 import com.example.proyecto_catedra.ui.screens.transactions.AddTransactionScreen
 import com.example.proyecto_catedra.ui.screens.transactions.TransactionsScreen
 import com.example.proyecto_catedra.ui.screens.budgets.BudgetsScreen
@@ -96,6 +98,8 @@ fun AppNavigation(
     var showNews by remember { mutableStateOf(false) }
     var showTransactions by remember { mutableStateOf(false) }
     var showBudgets by remember { mutableStateOf(false) }
+    var showProfileHistory by remember { mutableStateOf(false) }
+    var showEditProfile by remember { mutableStateOf(false) }
     
     val isAuthenticated = authState.isAuthenticated
     
@@ -278,6 +282,60 @@ fun AppNavigation(
                         showAddTransaction = false
                     }
                 }
+            } else if (showProfileHistory) {
+                val transactionsViewModel = remember {
+                    TransactionsViewModel(
+                        database.transactionDao(),
+                        authState.currentUserId ?: ""
+                    )
+                }
+                val txState by transactionsViewModel.uiState.collectAsState()
+                val historyItems = txState.transactions.take(50).map { tx ->
+                    com.example.proyecto_catedra.ui.screens.profile.HistoryItem(
+                        id = tx.id,
+                        title = tx.description,
+                        subtitle = tx.category,
+                        amountLabel = (if (tx.type == "EXPENSE") "-" else "+") + "$" + String.format("%.2f", tx.amount)
+                    )
+                }
+                ProfileHistoryScreen(
+                    items = historyItems,
+                    isLoading = txState.isLoading,
+                    onBack = { showProfileHistory = false }
+                )
+            } else if (showEditProfile) {
+                // Create ProfileViewModel to read current values
+                val profileViewModel = remember {
+                    ProfileViewModel(
+                        database.userDao(),
+                        database.transactionDao(),
+                        authState.currentUserId ?: ""
+                    )
+                }
+                val profileState by profileViewModel.uiState.collectAsState()
+                val scope = rememberCoroutineScope()
+                EditProfileScreen(
+                    currentName = profileState.userName.ifEmpty { authState.name ?: "" },
+                    currentEmail = profileState.userEmail.ifEmpty { authState.email ?: "" },
+                    currentUniversidad = null,
+                    currentCarrera = null,
+                    currentSemestre = null,
+                    onBack = { showEditProfile = false },
+                    onSave = { name, universidad, carrera, semestre ->
+                        scope.launch {
+                            val userId = authState.currentUserId ?: return@launch
+                            database.userDao().updateUserProfile(
+                                userId = userId,
+                                name = name,
+                                photoUrl = null,
+                                universidad = universidad,
+                                carrera = carrera,
+                                semestre = semestre
+                            )
+                            showEditProfile = false
+                        }
+                    }
+                )
             } else when (currentScreen) {
                 "Home" -> {
                     // Create HomeViewModel for the current user
@@ -338,6 +396,8 @@ fun AppNavigation(
                             currentScreen = "Budgets"
                             showBudgets = true
                         },
+                        onNavigateToHistory = { showProfileHistory = true },
+                        onEditProfile = { showEditProfile = true },
                         currentTab = "Perfil"
                     )
                 }

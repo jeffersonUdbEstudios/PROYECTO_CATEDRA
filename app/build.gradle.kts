@@ -61,6 +61,10 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.material.icons.extended)
+
+    // ML Kit Translation
+    implementation("com.google.mlkit:translate:17.0.2")
     
     // Firebase
     implementation(platform("com.google.firebase:firebase-bom:32.7.4"))
@@ -79,6 +83,7 @@ dependencies {
     
     // Coroutines
     implementation(libs.coroutines)
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
     
     // Room
     implementation(libs.room.runtime)

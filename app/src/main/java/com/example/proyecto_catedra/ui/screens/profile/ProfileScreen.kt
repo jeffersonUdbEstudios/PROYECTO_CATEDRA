@@ -31,6 +31,8 @@ fun ProfileScreen(
     onNavigateToHome: () -> Unit = {},
     onNavigateToTransactions: () -> Unit = {},
     onNavigateToBudgets: () -> Unit = {},
+    onNavigateToHistory: () -> Unit = {},
+    onEditProfile: () -> Unit = {},
     currentTab: String = "Perfil"
 ) {
     val lightBlue = Color(0xFFE3F2FD)
@@ -227,6 +229,50 @@ fun ProfileScreen(
                 color = Color.Black,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
+
+            // Edit personal data
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onEditProfile() }
+                    .padding(vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = "Editar datos",
+                    tint = Color.Black,
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(modifier = Modifier.width(16.dp))
+                Text(
+                    text = "Editar datos personales",
+                    fontSize = 16.sp,
+                    color = Color.Black
+                )
+            }
+
+            // History option
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onNavigateToHistory() }
+                    .padding(vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.History,
+                    contentDescription = "Historial",
+                    tint = Color.Black,
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(modifier = Modifier.width(16.dp))
+                Text(
+                    text = "Historial",
+                    fontSize = 16.sp,
+                    color = Color.Black
+                )
+            }
             
             // Logout Option
             Row(

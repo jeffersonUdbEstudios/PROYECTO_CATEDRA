@@ -13,6 +13,7 @@ import kotlinx.coroutines.launch
 data class ProfileUiState(
     val userName: String = "",
     val userEmail: String = "",
+    val photoUrl: String? = null,
     val income: Double = 0.0,
     val expenses: Double = 0.0,
     val isLoading: Boolean = false,
@@ -47,6 +48,7 @@ class ProfileViewModel(
                 _uiState.value = ProfileUiState(
                     userName = user?.name ?: "",
                     userEmail = user?.email ?: "",
+                    photoUrl = user?.photoUrl,
                     income = income,
                     expenses = expenses,
                     isLoading = false,

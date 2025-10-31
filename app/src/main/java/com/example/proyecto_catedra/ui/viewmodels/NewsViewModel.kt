@@ -9,6 +9,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import com.google.mlkit.nl.translate.TranslateLanguage
+import com.google.mlkit.nl.translate.Translation
+import com.google.mlkit.nl.translate.TranslatorOptions
 
 data class NewsUiState(
     val articles: List<NewsArticle> = emptyList(),
@@ -34,12 +38,30 @@ class NewsViewModel(
             try {
                 val response = newsService.getNews(limit = 10, offset = 0)
                 if (response.isSuccessful && response.body() != null) {
-                    _uiState.update { state ->
-                        state.copy(
-                            articles = response.body()!!.news,
-                            isLoading = false,
-                            error = null
-                        )
+                    val original = response.body()!!.news
+                    // Traducir titular y resumen al español en dispositivo
+                    val options = TranslatorOptions.Builder()
+                        .setSourceLanguage(TranslateLanguage.ENGLISH)
+                        .setTargetLanguage(TranslateLanguage.SPANISH)
+                        .build()
+                    val translator = Translation.getClient(options)
+                    try {
+                        // Asegura que el modelo esté disponible (descarga si hace falta)
+                        translator.downloadModelIfNeeded().await()
+                        val translated = original.map { art ->
+                            val h = translator.translate(art.headline).await()
+                            val a = translator.translate(art.abstract).await()
+                            art.copy(headline = h, abstract = a)
+                        }
+                        _uiState.update { state ->
+                            state.copy(
+                                articles = translated,
+                                isLoading = false,
+                                error = null
+                            )
+                        }
+                    } finally {
+                        translator.close()
                     }
                 } else {
                     _uiState.update { state ->
