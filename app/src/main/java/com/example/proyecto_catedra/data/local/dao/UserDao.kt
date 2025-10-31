@@ -20,5 +20,24 @@ interface UserDao {
     
     @Query("DELETE FROM users WHERE uid = :userId")
     suspend fun deleteUser(userId: String)
+    
+    // Método para actualizar datos académicos del perfil
+    @Query("""
+        UPDATE users 
+        SET name = :name, 
+            universidad = :universidad, 
+            carrera = :carrera, 
+            semestre = :semestre,
+            updatedAt = :updatedAt
+        WHERE uid = :userId
+    """)
+    suspend fun updateUserProfile(
+        userId: String,
+        name: String,
+        universidad: String?,
+        carrera: String?,
+        semestre: String?,
+        updatedAt: Long = System.currentTimeMillis()
+    )
 }
 
