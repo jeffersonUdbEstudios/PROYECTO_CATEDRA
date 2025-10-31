@@ -51,7 +51,7 @@ fun EditProfileScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            
+
             OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text("Nombre") }, modifier = Modifier.fillMaxWidth())
             OutlinedTextField(value = email, onValueChange = {}, enabled = false, label = { Text("Email") }, modifier = Modifier.fillMaxWidth())
             OutlinedTextField(value = universidad, onValueChange = { universidad = it }, label = { Text("Universidad") }, modifier = Modifier.fillMaxWidth())
