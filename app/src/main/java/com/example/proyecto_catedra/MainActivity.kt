@@ -5,8 +5,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.*
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
@@ -28,6 +30,7 @@ import com.example.proyecto_catedra.ui.screens.transactions.AddTransactionScreen
 import com.example.proyecto_catedra.ui.screens.transactions.TransactionsScreen
 import com.example.proyecto_catedra.ui.screens.budgets.BudgetsScreen
 import com.example.proyecto_catedra.ui.screens.news.NewsScreen
+import com.example.proyecto_catedra.ui.screens.reports.ReportsScreen
 import com.example.proyecto_catedra.ui.theme.PROYECTO_CATEDRATheme
 import com.example.proyecto_catedra.ui.viewmodels.AuthViewModel
 import com.example.proyecto_catedra.ui.viewmodels.ProfileViewModel
@@ -36,6 +39,7 @@ import com.example.proyecto_catedra.ui.viewmodels.NewsViewModel
 import com.example.proyecto_catedra.ui.viewmodels.TransactionsViewModel
 import com.example.proyecto_catedra.ui.viewmodels.BudgetViewModel
 import com.example.proyecto_catedra.ui.viewmodels.AddTransactionViewModel
+import com.example.proyecto_catedra.ui.viewmodels.ReportsViewModel
 import com.example.proyecto_catedra.ui.screens.transactions.TransactionType
 
 class MainActivity : ComponentActivity() {
@@ -96,6 +100,7 @@ fun AppNavigation(
     var credentials by remember { mutableStateOf(AuthCredentials()) }
     var showAddTransaction by remember { mutableStateOf(false) }
     var showNews by remember { mutableStateOf(false) }
+    var showReports by remember { mutableStateOf(false) }
     var showTransactions by remember { mutableStateOf(false) }
     var showBudgets by remember { mutableStateOf(false) }
     var showProfileHistory by remember { mutableStateOf(false) }
@@ -170,6 +175,49 @@ fun AppNavigation(
                     },
                     currentTab = "News"
                 )
+            } else if (showReports) {
+                val reportsViewModel = remember(authState.currentUserId) {
+                    ReportsViewModel(
+                        database.transactionDao(),
+                        database.budgetDao(),
+                        authState.currentUserId ?: ""
+                    )
+                }
+                val reportsState by reportsViewModel.uiState.collectAsState()
+
+                when {
+                    reportsState.isLoading -> {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = androidx.compose.ui.Alignment.Center
+                        ) {
+                            CircularProgressIndicator()
+                        }
+                    }
+
+                    reportsState.error != null -> {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = androidx.compose.ui.Alignment.Center
+                        ) {
+                            Text(text = reportsState.error ?: "Error")
+                        }
+                    }
+
+                    else -> {
+                        ReportsScreen(
+                            totalIncome = reportsState.totalIncome,
+                            totalExpenses = reportsState.totalExpenses,
+                            categoryBreakdown = reportsState.categoryBreakdown,
+                            topExpenses = reportsState.topExpenses,
+                            budgetComparison = reportsState.budgetComparison,
+                            onBack = {
+                                showReports = false
+                                currentScreen = "Home"
+                            }
+                        )
+                    }
+                }
             } else if (showTransactions) {
                 val transactionsViewModel = remember {
                     TransactionsViewModel(
@@ -361,7 +409,7 @@ fun AppNavigation(
                         showBudgets = true
                     },
                     onAddTransaction = { showAddTransaction = true },
-                    onViewReports = { showNews = true },
+                    onViewReports = { showReports = true },
                     currentTab = "Inicio"
                 )
                 }

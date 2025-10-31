@@ -44,6 +44,7 @@ class TransactionsViewModel(
                             amount = entity.amount,
                             type = entity.type,
                             date = entity.date,
+                            paymentMethod = entity.paymentMethod,
                             icon = getIconForCategory(entity.category)
                         )
                     }
